@@ -10,144 +10,110 @@ tp = time.time()
 ts = time.time()
 fst = False
 # hsv цветов
-low_black=np.array([0,0,0])
+low_black=np.array([0,0,0]) # HSV чёрного
 up_black=np.array([70,255,27])
 
-low_red=np.array([0,168,105])
+low_red=np.array([0,168,105]) # HSV красного
 up_red=np.array([13,255,131])
 
-low_blue=np.array([93,108,56])
+low_blue=np.array([93,108,56]) # HSV синего
 up_blue=np.array([128,255,139])
 
-low_orange=np.array([0,110,100])
+low_orange=np.array([0,110,100]) # HSV оранжевого
 up_orange=np.array([20,255,182])
 
-low_green=np.array([74, 168, 67])
+low_green=np.array([74, 168, 67]) # HSV зелёного
 up_green=np.array([99, 255, 145])
 
 port = serial.Serial("/dev/ttyS0", baudrate=115200, stopbits=serial.STOPBITS_ONE)
 robot = rapi.RobotAPI(flag_serial=False)
 robot.set_camera(100, 640, 480)
 
-direction = "None"
+direction = "None" # направление движения
 
-vrm= [0, 0, 0, 0]
+vrm = [0, 0, 0, 0]
 vi = 0
 message = ""
-fps = 0
+fps = 0 # показатель fps
 fps1 = 0
 fps_time = 0
 
 art = 0
 
 
-e_old = 0
-kp = 0.15
-kd = 0.15
+e_old = 0 # ошибка старая
+kp = 0.15 # коэфицент 
+kd = 0.15 # коэфицент
 
-d1 = 0
+d1 = 0 
 d2 = 0
 d1old = 0
 d2old = 0
 d1t = 0
 d2t = 0
 
-color = 'Green'
-line1 = 'Orange'
-lap = 0
+color = 'Green' # цвет обнаруженного знака
+line1 = 'Orange' # цвет обнаруженной линии на трассе
+lap = 0 # количество пройденных кругов
 
-speed = 0
-serv = 0
-rgb = "111"
+speed = 0 # скорость
+serv = 0 # угол поворота серво мотора
+rgb = "111" # сообщение передающееся на Raspberry
 inn = ""
-
-
-# def znak(frame):# распознавание знаков
-#     x1 = 160
-#     x2 = 480
-#     y1 = 160
-#     y2 = 320
-#     dat = frame[y1:y2, x1:x2]
-#     hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV)
-#
-#
-#     mask = cv2.inRange(hsv, low_red, up_red)
-#     imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-#     xx,yy,ww,hh = 0,0,0,0
-#     for contor in contours:
-#         x, y, w, h = cv2.boundingRect(contor)
-#         if h*w > 100 and h*w > hh*ww:
-#             cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2)
-#             xx, yy, ww, hh = x,y,w,h
-#
-#     cv2.rectangle(dat, (xx, yy), (xx + ww, yy + hh), (0, 255, 255), 2)
-#
-#     mask1 = cv2.inRange(hsv, low_green, up_green)
-#     imd, contours, hod = cv2.findContours(mask1, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-#     xq, yq, wq, hq = 0, 0, 0, 0
-#     for contor in contours:
-#         x, y, w, h = cv2.boundingRect(contor)
-#         if h*w > 100 and h*w > hq*wq:
-#             xq, yq, wq, hq = x,y,w,h
-#
-#     cv2.rectangle(dat, (xq, yq), (xq + wq, yq + hq), (255, 0, 255), 2)
-
-    # cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
 def line(frame):# распознаваие стен
     global d1, d2, d1old, d2old, d1t, d2t
-    x3 = 0
+    x3 = 0 # размеры области интереса на камере
     x4 = 170
     y3 = 200
     y4 = 280
-    dat = frame[y3:y4, x3:x4]
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV)
-    mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3))
-    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    dat = frame[y3:y4, x3:x4] # создание области интереса
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует RGB в HSV
+    mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3)) # создание маски
+    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
     xe, ye, we, he = 0, 0, 0, 0
     d1 = 0
     for contor in contours:
-        x, y, w, h = cv2.boundingRect(contor)
+        x, y, w, h = cv2.boundingRect(contor) # выделение найденых стен
         a = cv2.contourArea(contor)
         if a > 200 and x + w > xe + we:
             xe, ye, we, he = x, y, w, h
     d1 = xe + we
-    cv2.rectangle(dat, (xe, ye), (xe + we, ye + he), (255, 255, 0), 2)
-    cv2.rectangle(frame, (x3, y3), (x4, y4), (255, 0, 0), 2)
+    cv2.rectangle(dat, (xe, ye), (xe + we, ye + he), (255, 255, 0), 2) # обводка для найденых стен
+    cv2.rectangle(frame, (x3, y3), (x4, y4), (255, 0, 0), 2) # отображение области интереса
     if d1 == 0:
         if time.time() - d1t <= 0.05:
-            d1 = d1old
+            d1 = d1old # запоминаем значения
     else:
-        d1old = d1
+        d1old = d1 # запоминаем значение
         d1t = time.time()
 
 
 
-    x5 = 470
+    x5 = 470 # размеры области интереса на камере
     x6 = 640
     y5 = 200
     y6 = 280
 
-    dat = frame[y5:y6, x5:x6]
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV)
-    mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3))
-    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    dat = frame[y5:y6, x5:x6] # создание области интереса
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует RGB в HSV
+    mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3))# создание маски
+    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
     xr, yr, wr, hr = 150, 0, 0, 0
     d2 = 0
     for contor in contours:
-        x, y, w, h = cv2.boundingRect(contor)
+        x, y, w, h = cv2.boundingRect(contor) # выделение найденых стен
         a = cv2.contourArea(contor)
         if a > 200 and 150 - x> 150 - xr:
             xr, yr, wr, hr = x, y, w, h
     d2 = 150 - xr
-    cv2.rectangle(dat, (xr, yr), (xr + wr, yr + hr), (255, 255, 0), 2)
-
-    cv2.rectangle(frame, (x5, y5), (x6, y6), (255, 0, 0), 2)
+    cv2.rectangle(dat, (xr, yr), (xr + wr, yr + hr), (255, 255, 0), 2) # обводка для найденых стен
+    cv2.rectangle(frame, (x5, y5), (x6, y6), (255, 0, 0), 2) # отображение области интереса
     if d2 == 0:
         if time.time() - d2t <= 0.05:
-            d2 = d2old
+            d2 = d2old # запоминаем значения
     else:
-        d2old = d2
+        d2old = d2 # запоминаем значения
         d2t = time.time()
 
 def povorot(frame):# распознавание оранжевых и синих линий на трассе
@@ -258,16 +224,15 @@ while 1:# цикл
 
     # запуск функций
     frame = robot.get_frame(wait_new_frame=1)
-    # znak(frame)
     line(frame)
     povorot(frame)
     if art + 0.5 <= time.time() and fst:
         rgb = "000"
 
-    serv = 0
+    serv = 0 # осуществление поворотов
     if speed > 0:
-        serv = PD()
-        if direction == "blue" and d1 == 0:
+        serv = PD() # едем по ПД регулятору
+        if direction == "blue" and d1 == 0: # поварачиваем 
             serv = 20
         if direction == "orange" and d2 == 0:
             serv = -20
@@ -307,20 +272,14 @@ while 1:# цикл
         else:
             speed = 0
 
-    if lap >= 12:
-        if tim_l + 5 < time.time():
-            speed = 0
-    else:
-        tim_l = time.time()
-
-    fps1 += 1
+    fps1 += 1 # считаем fps
     if time.time() > fps_time + 1:
         fps_time = time.time()
         fps = fps1
         fps1 = 0
-    cv2.rectangle(frame, (0, 0), (0 + 160, 0 + 105), (0, 0, 0), -1)
+    cv2.rectangle(frame, (0, 0), (0 + 160, 0 + 105), (0, 0, 0), -1) # рисуем прямоугольники на камере
     cv2.rectangle(frame, (440, 0), (440 + 200, 0 + 100), (0, 0, 0), -1)
-    robot.text_to_frame(frame, message, 20, 20)
+    robot.text_to_frame(frame, message, 20, 20) # выводим на камеру информацию
     robot.text_to_frame(frame, inn, 20, 40)
     robot.text_to_frame(frame, 'fps = ' + str(fps), 500, 20)
     robot.text_to_frame(frame, 'd1 = ' + str(d1), 20, 60)
