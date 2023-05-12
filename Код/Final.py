@@ -147,7 +147,7 @@ def znak(frame): # распознавание знаков
             xright = 470
 
 
-def line(frame): # распознаваие стен
+def line(frame): # распознаваие стен (подробнее в kvalifikacia)
     global d1, d2, d1old, d2old, d1t, d2t, xleft, xright
     x3 = 0
     x4 = xleft
@@ -201,7 +201,7 @@ def line(frame): # распознаваие стен
         d2old = d2
         d2t = time.time()
 
-def povorot(frame): # распознавание оранжевых и синих линий на трассе
+def povorot(frame): # распознавание оранжевых и синих линий на трассе (подробнее в kvalifikacia)
     global d1,d2,lap,tp, direction, vi, vrm, art, rgb
     x7 = 280
     x8 = 340
@@ -296,7 +296,7 @@ def povorot(frame): # распознавание оранжевых и сини�
 
 def PD(): # ПД регулятор для движения по трассе
     global e_old, d1, d2
-    kp = 0.15
+    kp = 0.15 # коэфиценты
     kd = 0.15
     e = d2 - d1
     Up = e * kp
@@ -307,7 +307,7 @@ def PD(): # ПД регулятор для движения по трассе
 
 def PD_zn(): # ПД регулятор для движения по трассе с определением знаков
     global e_old_zn, x_zn, y_zn, w_zn, h_zn, color, tg, tr
-    kp = 0.15
+    kp = 0.15 # коэфиценты
     kd = 0.15
     prib = (y_zn+h_zn)*1.1
     if color == "Red":
@@ -377,13 +377,13 @@ while 1: # цикл
         else:
             speed = 0
 
-    if lap >= 12:
+    if lap >= 12: # остановка на финише
         if tim_l + 5 < time.time():
             speed = 0
     else:
         tim_l = time.time()
 
-    fps1 += 1
+    fps1 += 1 # счётчик fps
     if time.time() > fps_time + 1:
         fps_time = time.time()
         fps = fps1
@@ -392,10 +392,10 @@ while 1: # цикл
     x2 = 560
     y1 = 210
     y2 = 400
-    cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+    cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2) # рисуем прямоугольники на камере
     cv2.rectangle(frame, (0, 0), (0 + 160, 0 + 105), (0, 0, 0), -1)
     cv2.rectangle(frame, (440, 0), (440 + 200, 0 + 100), (0, 0, 0), -1)
-    robot.text_to_frame(frame, message, 20, 20)
+    robot.text_to_frame(frame, message, 20, 20) # выыодим на камеру информацию
     robot.text_to_frame(frame, inn, 20, 40)
     robot.text_to_frame(frame, 'fps = ' + str(fps), 500, 20)
     robot.text_to_frame(frame, 'd1 = ' + str(d1), 20, 60)
