@@ -14,27 +14,27 @@ tr = time.time()
 tg = time.time()
 
 fst = False
-# hsv цветов
-low_black=np.array([0,0,0])
+
+low_black=np.array([0,0,0]) # HSV чёрного
 up_black=np.array([70,255,27])
 
-low_red=np.array([0,130,0])
+low_red=np.array([0,130,0]) # HSV красного
 up_red=np.array([5,220,255])
 
-low_blue=np.array([93,108,56])
+low_blue=np.array([93,108,56]) # HSV синего
 up_blue=np.array([128,255,139])
 
-low_orange=np.array([0,110,100])
+low_orange=np.array([0,110,100]) # HSV оранжеаого
 up_orange=np.array([20,255,182])
 
-low_green=np.array([74, 168, 67])
+low_green=np.array([74, 168, 67]) # HSV зелёного
 up_green=np.array([99, 255, 145])
 
 port = serial.Serial("/dev/ttyS0", baudrate=115200, stopbits=serial.STOPBITS_ONE)
 robot = rapi.RobotAPI(flag_serial=False)
 robot.set_camera(100, 640, 480)
 
-direction = "None"
+direction = "None" # направление движения
 
 vrm= [0, 0, 0, 0]
 vi = 0
@@ -75,9 +75,9 @@ color = 'Green'
 line1 = 'Orange'
 lap = 0
 
-speed = 0
-serv = 0
-rgb = "111"
+speed = 0 # скорость
+serv = 0 # угол поворота сервомотора
+rgb = "111" # сообщение для светодиода
 inn = ""
 
 
@@ -87,30 +87,30 @@ xright = 470
 def znak(frame): # распознавание знаков
     global x_zn, y_zn, h_zn, w_zn,color, tz, xleft, xright, zn_t, zn_old, wzn_old
     x_zn, y_zn, h_zn, w_zn = 0, 0, 0, 0
-    x1 = 80
+    x1 = 80 # область интереса
     x2 = 560
     y1 = 210
     y2 = 400
     dat = frame[y1:y2, x1:x2]
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразование BGR в HSV
 
 
-    mask = cv2.inRange(hsv, low_red, up_red)
-    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    mask = cv2.inRange(hsv, low_red, up_red) # создание маски
+    imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
     xx, yy, ww, hh = 0,0,0,0
     for contor in contours:
-        x, y, w, h = cv2.boundingRect(contor)
+        x, y, w, h = cv2.boundingRect(contor) # обводим контуры
         if h*w > 100 and h*w > hh*ww:
             xx, yy, ww, hh = x,y,w,h
 
 
 
 
-    mask1 = cv2.inRange(hsv, low_green, up_green)
-    imd, contours, hod = cv2.findContours(mask1, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    mask1 = cv2.inRange(hsv, low_green, up_green) # создание маски
+    imd, contours, hod = cv2.findContours(mask1, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим контуры на маске
     xq, yq, wq, hq = 0, 0, 0, 0
     for contor in contours:
-        x, y, w, h = cv2.boundingRect(contor)
+        x, y, w, h = cv2.boundingRect(contor) # обводим контуры
         if h*w > 100 and h*w > hq*wq:
             xq, yq, wq, hq = x,y,w,h
 
@@ -119,18 +119,18 @@ def znak(frame): # распознавание знаков
 
     if hh > 0 or hq > 0: # изменение областей интересов для распознавания стен
 
-        if yy + hh > yq + hq:
-            cv2.rectangle(dat, (xx, yy), (xx + ww, yy + hh), (0, 255, 255), 2)
+        if yy + hh > yq + hq: # объезд знаков
+            cv2.rectangle(dat, (xx, yy), (xx + ww, yy + hh), (0, 255, 255), 2) # обводим найденные когтуры
             x_zn, y_zn, w_zn, h_zn = xx, yy, ww, hh
             color = 'Red'
-            if direction == "blue":
+            if direction == "blue": # направление движения
                 xleft = 30
 
         else:
-            cv2.rectangle(dat, (xq, yq), (xq + wq, yq + hq), (255, 0, 255), 2)
+            cv2.rectangle(dat, (xq, yq), (xq + wq, yq + hq), (255, 0, 255), 2) # обводим найденные контуры
             x_zn, y_zn, w_zn, h_zn = xq, yq, wq, hq
             color = 'Green'
-            if direction == "orange":
+            if direction == "orange": # направление движения
                 xright = 610
 
         tz = time.time()
