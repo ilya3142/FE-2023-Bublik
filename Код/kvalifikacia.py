@@ -68,7 +68,7 @@ def line(frame):# распознаваие стен
     y3 = 200
     y4 = 280
     dat = frame[y3:y4, x3:x4] # создание области интереса
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует RGB в HSV
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует BGR в HSV
     mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3)) # создание маски
     imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
     xe, ye, we, he = 0, 0, 0, 0
@@ -96,7 +96,7 @@ def line(frame):# распознаваие стен
     y6 = 280
 
     dat = frame[y5:y6, x5:x6] # создание области интереса
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует RGB в HSV
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует BGR в HSV
     mask = cv2.blur(cv2.inRange(hsv, low_black, up_black), (3, 3))# создание маски
     imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
     xr, yr, wr, hr = 150, 0, 0, 0
@@ -118,44 +118,44 @@ def line(frame):# распознаваие стен
 
 def povorot(frame):# распознавание оранжевых и синих линий на трассе
     global d1,d2,lap,tp, direction, vi, vrm, art, rgb
-    x7 = 280
+    x7 = 280 # размеры области интереса 
     x8 = 340
     y7 = 440
     y8 = 480
     dat = frame[y7:y8, x7:x8]
-    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(dat, cv2.COLOR_BGR2HSV) # преобразует BGR в HSV
 
     if direction == "None":
-        mask = cv2.inRange(hsv, low_orange, up_orange)
-        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        mask = cv2.inRange(hsv, low_orange, up_orange) # создание маски для оранжевого
+        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
         xx1, yy1, ww1, hh1 = 0, 0, 0, 0
         for contor in contours:
-            x, y, w, h = cv2.boundingRect(contor)
+            x, y, w, h = cv2.boundingRect(contor) # выделение найденных линий на трассе
             if h * w > 50 and h * w > hh1 * ww1:
-                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2) # обводка найденных линий
                 xx1, yy1, ww1, hh1 = x, y, w, h
-        cv2.rectangle(dat, (xx1, yy1), (xx1 + ww1, yy1 + hh1), (0, 255, 255), 2)
+        cv2.rectangle(dat, (xx1, yy1), (xx1 + ww1, yy1 + hh1), (0, 255, 255), 2) # рисуем область интереса
 
-        mask = cv2.inRange(hsv, low_blue, up_blue)
-        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        mask = cv2.inRange(hsv, low_blue, up_blue) # создание маски для синего
+        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
         xx2, yy2, ww2, hh2 = 0, 0, 0, 0
         for contor in contours:
-            x, y, w, h = cv2.boundingRect(contor)
+            x, y, w, h = cv2.boundingRect(contor) # выделениенайденных линий на трассе
             if h * w > 50 and h * w > hh2 * ww2:
-                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2) # обводка найденных линий
                 xx2, yy2, ww2, hh2 = x, y, w, h
-        cv2.rectangle(dat, (xx2, yy2), (xx2 + ww2, yy2 + hh2), (0, 255, 255), 2)
+        cv2.rectangle(dat, (xx2, yy2), (xx2 + ww2, yy2 + hh2), (0, 255, 255), 2) # рисуем область интереса
 
         if hh1>0 or hh2 > 0:# счёт кругов пройденных роботом
             if tp + 0.5 < time.time():
 
                 lap += 1
                 if hh1 > 0:# распознавание направления движения
-                    direction = "orange"
-                    rgb = "110"
+                    direction = "orange" # направление движения
+                    rgb = "110" # сообщение для светодиода
                 if hh2 > 0:
-                    direction = "blue"
-                    rgb = "001"
+                    direction = "blue" # направление движения
+                    rgb = "001" # сообщение для светодиода
                 vrm[vi] = round(time.time() - tp, 2)
                 vi += 1
                 tp = time.time()
@@ -163,16 +163,16 @@ def povorot(frame):# распознавание оранжевых и синих
 
 
     elif direction == "orange":
-        mask = cv2.inRange(hsv, low_orange, up_orange)
-        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        mask = cv2.inRange(hsv, low_orange, up_orange) # создание маски
+        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим на маске контуры
         xx1, yy1, ww1, hh1 = 0, 0, 0, 0
         for contor in contours:
-            x, y, w, h = cv2.boundingRect(contor)
+            x, y, w, h = cv2.boundingRect(contor) # выделение контуров
             if h * w > 50 and h * w > hh1 * ww1:
-                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2) # обводка найденных контуров прямоугольником
                 xx1, yy1, ww1, hh1 = x, y, w, h
         cv2.rectangle(dat, (xx1, yy1), (xx1 + ww1, yy1 + hh1), (0, 255, 255), 2)
-        if hh1 > 0:
+        if hh1 > 0: # защита от двойного счёта кругов на 1 линии
             if tp + 0.5 < time.time():
                 rgb = "110"
                 art = time.time()
@@ -185,13 +185,13 @@ def povorot(frame):# распознавание оранжевых и синих
                 tp = time.time()
 
     else:
-        mask = cv2.inRange(hsv, low_blue, up_blue)
-        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        mask = cv2.inRange(hsv, low_blue, up_blue) # создание маски
+        imd, contours, hod = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE) # находим контуры на маске
         xx2, yy2, ww2, hh2 = 0, 0, 0, 0
         for contor in contours:
-            x, y, w, h = cv2.boundingRect(contor)
+            x, y, w, h = cv2.boundingRect(contor) # выделение контуров
             if h * w > 50 and h * w > hh2 * ww2:
-                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                cv2.rectangle(dat, (x, y), (x + w, y + h), (0, 255, 0), 2) # обводим найденные контуры прямоугольником
                 xx2, yy2, ww2, hh2 = x, y, w, h
         cv2.rectangle(dat, (xx2, yy2), (xx2 + ww2, yy2 + hh2), (0, 255, 255), 2)
 
@@ -207,7 +207,7 @@ def povorot(frame):# распознавание оранжевых и синих
                 tp = time.time()
 
 
-    cv2.rectangle(frame, (x7, y7), (x8, y8), (255, 0, 0), 2)
+    cv2.rectangle(frame, (x7, y7), (x8, y8), (255, 0, 0), 2) # рисуем область интереса
 
 def PD():# ПД регулятор для движения по трассе
     global e_old, d1, d2
